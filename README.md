@@ -9,7 +9,7 @@ solve two problems. This will require you to code the following:
 function for the simulated annealing functions.
 * Display functions. 
 
-The two problems: 
+**The two problems:** 
 
 **The n-Queens Problem:** On an n x n chessboard, place n Queens such that no Queen can attack
 any other Queen.
