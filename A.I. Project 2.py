@@ -18,13 +18,13 @@ class NQueens:
     # a neighbor is defined as a board where index zero is swapped with each of the other indexes
     def calculate_neighbors(self, l):
         Neighbors = []
-        for i in range(1,self.numQueens):
-            for j in range(i+1,self.numQueens):
+        for i in range(self.numQueens):
+            for j in range(i,self.numQueens):
                 newNeighbor = l.copy()
                 newNeighbor[j], newNeighbor[i] = newNeighbor[i], newNeighbor[j]
-                if not (''.join(str(i) for i in newNeighbor)) in self.tested_options:
+                if not (''.join(str(w) for w in newNeighbor)) in self.tested_options:
                     Neighbors.append(newNeighbor)
-                    self.tested_options.add(''.join(str(i) for i in newNeighbor))
+                    self.tested_options.add(''.join(str(p) for p in newNeighbor))
         #print(self.tested_options)
         return Neighbors
 
@@ -68,7 +68,7 @@ class NQueens:
                         hc_current_Score = Neighbor_score
                         new_current = True
                         self.count += 1
-                        print("Neighbor " + str(self.count) + " is new Current")
+                        #print("Neighbor " + str(self.count) + " is new Current")
                 if not new_current:
                     end = time()
                     time_Taken = end - start
@@ -79,8 +79,8 @@ class NQueens:
     #simulated annealing algorithm
     def queenSA(self, sa_board):
         start = time()
-        temp = list(range(self.numQueens*4000))
-        schedule = [x/100 for x in temp if x % 2 == 0]
+        temp = list(range(self.numQueens*200))
+        schedule = [x/25 for x in temp if x % 2 == 0]
         schedule.reverse()
         sa_Current =  sa_board
         sa_Current_Score = self.calculate_score(sa_Current)
