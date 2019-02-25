@@ -23,14 +23,16 @@ class NQueens:
                     score += 1
         return score
 
+    # calculates the amount of queens that a single queen sees
     def calculate_see(self, node, i):
         see = 0
-        for j in range(i + 1, self.numQueens):
-            if j - i == abs(node[i] - node[j]):
-                see += 1
+        for j in range( self.numQueens):
+            if i != j:
+                if j - i == abs(node[i] - node[j]):
+                    see += 1
         return see
 
-    # a neighbor is defined as a board where index zero is swapped with each of the other indexes
+    # a neighbor is defined as a board where index i is swapped with each of the other indexes
     def calculate_neighbor(self, l):
         lowest = l
         how_much_better = 0
@@ -43,10 +45,10 @@ class NQueens:
                 newNeighbor_i = self.calculate_see(newNeighbor, i)
                 newNeighbor_j = self.calculate_see(newNeighbor, j)
 
-                hmb = i_score + j_score - (newNeighbor_i + newNeighbor_j)
-                if hmb > how_much_better:
+                calc_diff = (i_score + j_score) - (newNeighbor_i + newNeighbor_j)
+                if calc_diff > how_much_better:
                     lowest = newNeighbor
-                    how_much_better = hmb
+                    how_much_better = calc_diff
         return lowest , how_much_better
 
     # calculates a single random new neighbor
@@ -59,7 +61,6 @@ class NQueens:
             y = randint(0,self.numQueens - 1)
         newNeighbor[y], newNeighbor[x] = newNeighbor[x], newNeighbor[y]
         return newNeighbor
-
 
     # hill climbing algorithm
     def queenHC(self,hc_board):
@@ -82,7 +83,7 @@ class NQueens:
     #simulated annealing algorithm
     def queenSA(self, sa_board):
         start = time()
-        temp = list(range(self.numQueens*200))
+        temp = list(range(6000))
         schedule = [x/25 for x in temp if x % 2 == 0]
         schedule.reverse()
         sa_Current =  sa_board
@@ -97,35 +98,43 @@ class NQueens:
             else:
                 sa_Next = self.rand_neighbor(sa_board)
                 next_Score = self.calculate_score(sa_Next)
-                prob = exp((sa_Current_Score - next_Score) / T)
+                prob = exp((sa_Current_Score-next_Score)/ T)
                 if next_Score < sa_Current_Score:
                     sa_Current = sa_Next
                     sa_Current_Score = next_Score
-                    #print("next is new current by score")
                 elif random() < prob:
                     sa_Current = sa_Next
                     sa_Current_Score = next_Score
-                    #print("next is new current by probability "+ str(prob))
+
+class Sudoku:
+    def __init__(self, e):
+        self.default_board = e
 
 
+selection = int(input("Please select which problem you would like solved.\n (1) Nqueens\n (2) Sudoku\nselect 1 or 2: "))
 
-amt = int(input("Please enter how many queens there are: "))
-while amt > 250:
-    amt = int(input("Sorry that is too many queens. Please enter a number smaller than 251: "))
+if selection == 1:
+    amt = int(input("Please enter how many queens there are: "))
+    while amt > 250:
+        amt = int(input("Sorry that is too many queens. Please enter a number smaller than 251: "))
 
-if amt < 4:
-    print("Sorry, a N Queens problem of that size is not solvable.")
+    if amt < 4:
+        print("Sorry, a N Queens problem of that size is not solvable.")
+    else:
+        r = NQueens(amt)
+        newBoard = r.boardQ()
+        #Hill climbing
+        print("Hill Climbing Algorithm")
+        final_node , final_score , total_time = r.queenHC(newBoard)
+        print( "Final result for Hill Climbing algorithm: " + str(final_node) +
+               "\nwith score: " + str(final_score) + "\nTotal time taken: " + str(total_time)+ " s")
+        print("----------------------------------------------------------------------------------")
+        #simulated annealing
+        print("Simulated Annealing Algorithm")
+        sa_final_node , sa_final_score , sa_total_time = r.queenSA(newBoard)
+        print( "Final result for simulated annealing algorithm: " + str(sa_final_node) +
+               "\nwith score: " + str(sa_final_score) + "\nTotal time taken: " + str(sa_total_time)+ " s")
+elif selection == 2:
+    file = (input("please enter the file name for the board: "))
 else:
-    r = NQueens(amt)
-    newBoard = r.boardQ()
-    #Hill climbing
-    print("Hill Climbing Algorithm")
-    final_node , final_score , total_time = r.queenHC(newBoard)
-    print( "Final result for Hill Climbing algorithm: " + str(final_node) +
-           "\nwith score: " + str(final_score) + "\nTotal time taken: " + str(total_time)+ " s")
-    print("----------------------------------------------------------------------------------")
-    #simulated annealing
-    print("Simulated Annealing Algorithm")
-    sa_final_node , sa_final_score , sa_total_time = r.queenSA(newBoard)
-    print( "Final result for simulated annealing algorithm: " + str(sa_final_node) +
-           "\nwith score: " + str(sa_final_score) + "\nTotal time taken: " + str(sa_total_time)+ " s")
+    print("invalid selection")
