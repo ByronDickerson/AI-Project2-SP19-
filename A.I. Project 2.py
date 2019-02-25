@@ -6,7 +6,6 @@ class NQueens:
     def __init__(self,n):
         self.numQueens = n
         self.tested_options = set()
-        self.count = 0
 
     #generates a board with randomly placed queens
     def boardQ(self):
@@ -15,18 +14,40 @@ class NQueens:
         self.tested_options.add(''.join(str(i) for i in chessboard))
         return chessboard
 
+    # calculate the score
+    def calculate_score(self, node):
+        score = 0
+        for i in range(self.numQueens - 1):
+            for j in range(i + 1, self.numQueens):
+                if j - i == abs(node[i] - node[j]):
+                    score += 1
+        return score
+
+    def calculate_see(self, node, i):
+        see = 0
+        for j in range(i + 1, self.numQueens):
+            if j - i == abs(node[i] - node[j]):
+                see += 1
+        return see
+
     # a neighbor is defined as a board where index zero is swapped with each of the other indexes
-    def calculate_neighbors(self, l):
-        Neighbors = []
-        for i in range(self.numQueens):
-            for j in range(i,self.numQueens):
+    def calculate_neighbor(self, l):
+        lowest = l
+        how_much_better = 0
+        for i in range(self.numQueens-1):
+            i_score = self.calculate_see(l, i)
+            for j in range(i+1,self.numQueens):
+                j_score = self.calculate_see(l, j)
                 newNeighbor = l.copy()
                 newNeighbor[j], newNeighbor[i] = newNeighbor[i], newNeighbor[j]
-                if not (''.join(str(w) for w in newNeighbor)) in self.tested_options:
-                    Neighbors.append(newNeighbor)
-                    self.tested_options.add(''.join(str(p) for p in newNeighbor))
-        #print(self.tested_options)
-        return Neighbors
+                newNeighbor_i = self.calculate_see(newNeighbor, i)
+                newNeighbor_j = self.calculate_see(newNeighbor, j)
+
+                hmb = i_score + j_score - (newNeighbor_i + newNeighbor_j)
+                if hmb > how_much_better:
+                    lowest = newNeighbor
+                    how_much_better = hmb
+        return lowest , how_much_better
 
     # calculates a single random new neighbor
     def rand_neighbor(self, l):
@@ -39,42 +60,24 @@ class NQueens:
         newNeighbor[y], newNeighbor[x] = newNeighbor[x], newNeighbor[y]
         return newNeighbor
 
-    #calculate the score
-    def calculate_score(self, node):
-        score = 0
-        for i in range(self.numQueens-1):
-            for j in range(i+1,self.numQueens):
-                if j-i == abs(node[i]-node[j]):
-                    score += 1
-        return score
 
     # hill climbing algorithm
     def queenHC(self,hc_board):
         start = time()
         if self.numQueens >= 4:
-            new_current = False
             hc_Current = hc_board
-            hc_current_Score = self.calculate_score(hc_Current)
+            hc_Current_score = self.calculate_score(hc_Current)
             print("Current: " + str(hc_Current))
-            print("Current's score is: " + str(hc_current_Score))
+            print("current score: " + str(hc_Current_score))
             while True:
-                cNeighbors = self.calculate_neighbors(hc_Current)
-                #print("Neighbors: " + str(cNeighbors))
-                for i in cNeighbors:
-                    Neighbor_score = self.calculate_score(i)
-                    #print("Neighbor: "+ str(i)+ "\n Has score: "+ str(Neighbor_score))
-                    if Neighbor_score < hc_current_Score:
-                        hc_Current = i
-                        hc_current_Score = Neighbor_score
-                        new_current = True
-                        self.count += 1
-                        #print("Neighbor " + str(self.count) + " is new Current")
-                if not new_current:
+                next_node,next_node_score = self.calculate_neighbor(hc_Current)
+                if next_node_score != 0:
+                    hc_Current = next_node
+                else:
                     end = time()
                     time_Taken = end - start
-                    return hc_Current, hc_current_Score, time_Taken
-                else:
-                    new_current = False
+                    hc_Current_score = self.calculate_score(hc_Current)
+                    return hc_Current, hc_Current_score, time_Taken
 
     #simulated annealing algorithm
     def queenSA(self, sa_board):
