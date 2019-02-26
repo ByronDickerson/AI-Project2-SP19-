@@ -14,7 +14,7 @@ class NQueens:
         self.tested_options.add(''.join(str(i) for i in chessboard))
         return chessboard
 
-    # calculate the score
+    # calculate the score. which is the total number of conflicts
     def calculate_score(self, node):
         score = 0
         for i in range(self.numQueens - 1):
@@ -109,6 +109,7 @@ class NQueens:
 class Sudoku:
     def __init__(self, e):
         self.default_board = e
+
 
 
 selection = int(input("Please select which problem you would like solved.\n (1) Nqueens\n (2) Sudoku\nselect 1 or 2: "))
