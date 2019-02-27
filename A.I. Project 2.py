@@ -1,6 +1,7 @@
 from random import sample, randint,random
 from time import time
 from math import exp
+import numpy as np
 
 class NQueens:
     def __init__(self,n):
@@ -51,16 +52,16 @@ class NQueens:
                     how_much_better = calc_diff
         return lowest , how_much_better
 
-    # calculates a single random new neighbor
+    # calculates a the possible neighbors and then selects a random one
     def rand_neighbor(self, l):
-        newNeighbor = l.copy()
-        x = randint(0,self.numQueens - 1)
-        y = randint(0,self.numQueens - 1)
-        while x == y:
-            x = randint(0,self.numQueens - 1)
-            y = randint(0,self.numQueens - 1)
-        newNeighbor[y], newNeighbor[x] = newNeighbor[x], newNeighbor[y]
-        return newNeighbor
+        neighbors = []
+        for i in range(self.numQueens - 1):
+            for j in range(i + 1, self.numQueens):
+                newNeighbor = l.copy()
+                newNeighbor[i], newNeighbor[j] = newNeighbor[j], newNeighbor[i]
+                neighbors.append(newNeighbor)
+        x = randint(0,len(neighbors)-1)
+        return neighbors[x]
 
     # hill climbing algorithm
     def queenHC(self,hc_board):
@@ -83,7 +84,7 @@ class NQueens:
     #simulated annealing algorithm
     def queenSA(self, sa_board):
         start = time()
-        temp = list(range(6000))
+        temp = list(range(10000))
         schedule = [x/25 for x in temp if x % 2 == 0]
         schedule.reverse()
         sa_Current =  sa_board
@@ -108,13 +109,75 @@ class NQueens:
 
 class Sudoku:
     def __init__(self, e):
-        self.default_board = e
+        self.myFile = np.genfromtxt(e, delimiter=',')
+
+    #create random starting board
+    def boardS(self):
+        puzzle = self.myFile
+
+        for i in range(len(puzzle)):
+            numbers = list(range(26))
+            for j in range(len(puzzle)):
+                if puzzle[i][j] != 0:
+                    numbers.remove( puzzle[i][j])
+            for j in range(len(puzzle)):
+                if puzzle[i][j] == 0:
+                    x = randint(1, 25)
+                    while x not in numbers:
+                        x = randint(1,25)
+                    puzzle[i][j] = x
+                    numbers.remove(x)
+        return puzzle
+
+    def check_columns(self,y):
+        columns = 0
+
+        for i in range(len(y)):
+            numbers_in_c = []
+            for j in range(len(y)):
+                numbers_in_c.append(y[j][i])
+            for j in range(len(y)):
+                if y[j][i] in numbers_in_c:
+                    columns +=1
+        return columns
 
 
+    def check_squares(self,i,j):
+        squares = 0
+
+
+
+    def scoreOf(self,s):
+        score = 0
+        score = self.check_columns(s)
+        return score
+
+    #hill climbing algorithm for sudoku
+    def sudokuHC(self,s_HC_Board):
+        start = time()
+        puzzle_board = s_HC_Board
+        puzzle_score = self.scoreOf(puzzle_board)
+        print("Current:\n " + str(puzzle_board))
+        print("current score: " + str(puzzle_score))
+        end = time()
+        s_time_Taken = end - start
+        return puzzle_board, puzzle_score, s_time_Taken
+
+    #Simulated annealing  algorithm for sudoku
+    def sudokuSA(self, s_SA_Board):
+        start = time()
+        sa_puzzle_board = s_SA_Board
+        sa_puzzle_score = self.scoreOf(sa_puzzle_board)
+        print("Current:\n " + str(sa_puzzle_board))
+        print("current score: " + str(sa_puzzle_score))
+        end = time()
+        s_time_Taken_sa = end - start
+        return sa_puzzle_board, sa_puzzle_score, s_time_Taken_sa
 
 selection = int(input("Please select which problem you would like solved.\n (1) Nqueens\n (2) Sudoku\nselect 1 or 2: "))
 
 if selection == 1:
+
     amt = int(input("Please enter how many queens there are: "))
     while amt > 250:
         amt = int(input("Sorry that is too many queens. Please enter a number smaller than 251: "))
@@ -135,7 +198,24 @@ if selection == 1:
         sa_final_node , sa_final_score , sa_total_time = r.queenSA(newBoard)
         print( "Final result for simulated annealing algorithm: " + str(sa_final_node) +
                "\nwith score: " + str(sa_final_score) + "\nTotal time taken: " + str(sa_total_time)+ " s")
+
+
 elif selection == 2:
-    file = (input("please enter the file name for the board: "))
+
+    file = "sudoku1.csv"#(input("Please enter the file name for the board: "))
+    r = Sudoku(file)
+    gameBoard = r.boardS()
+    print("Hill Climbing Algorithm")
+    final_node_s , final_score_s, total_time_s = r.sudokuHC(gameBoard)
+    print("Final result for Hill Climbing algorithm:\n " + str(final_node_s) +
+          "\nwith score: " + str(final_score_s) + "\nTotal time taken: " + str(total_time_s) + " s")
+    print("----------------------------------------------------------------------------------")
+    # simulated annealing
+    print("Simulated Annealing Algorithm")
+    sa_final_node_s, sa_final_score_s, sa_total_time_s = r.sudokuSA(gameBoard)
+    print("Final result for simulated annealing algorithm:\n " + str(sa_final_node_s) +
+          "\nwith score: " + str(sa_final_score_s) + "\nTotal time taken: " + str(sa_total_time_s) + " s")
+
+
 else:
     print("invalid selection")
