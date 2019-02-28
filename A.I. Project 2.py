@@ -37,7 +37,7 @@ class NQueens:
     def calculate_neighbor(self, l):
         lowest = l
         how_much_better = 0
-        for i in range(self.numQueens-1):
+        for i in range(self.numQueens):
             i_score = self.calculate_see(l, i)
             for j in range(i+1,self.numQueens):
                 j_score = self.calculate_see(l, j)
@@ -110,6 +110,7 @@ class NQueens:
 class Sudoku:
     def __init__(self, e):
         self.myFile = np.genfromtxt(e, delimiter=',')
+        self.safe_numbers = np.zeros((25,25))
 
     #create random starting board
     def boardS(self):
@@ -119,9 +120,11 @@ class Sudoku:
             numbers = list(range(26))
             for j in range(len(puzzle)):
                 if puzzle[i][j] != 0:
+                    self.safe_numbers[i][j] = True
                     numbers.remove( puzzle[i][j])
             for j in range(len(puzzle)):
                 if puzzle[i][j] == 0:
+                    self.safe_numbers[i][j] = False
                     x = randint(1, 25)
                     while x not in numbers:
                         x = randint(1,25)
@@ -130,38 +133,74 @@ class Sudoku:
         return puzzle
 
     def check_columns(self,y):
-        columns = 0
+        columns_score = 0
 
         for i in range(len(y)):
             numbers_in_c = []
             for j in range(len(y)):
-                numbers_in_c.append(y[j][i])
-            for j in range(len(y)):
                 if y[j][i] in numbers_in_c:
-                    columns +=1
-        return columns
+                    columns_score +=1
+                else:
+                    numbers_in_c.append(y[j][i])
+
+        return columns_score
 
 
-    def check_squares(self,i,j):
-        squares = 0
-
+    def check_squares(self,y):
+        square_score = 0
+        for s in range(25):
+            numbers_in_squ = []
+            for n in range(25):
+                a = (s // 5)*5 + (n % 5)
+                b = (s % 5)*5 + (n // 5)
+                if y[a][b] in numbers_in_squ:
+                    square_score +=1
+                else:
+                    numbers_in_squ.append(y[a][b])
+        return square_score
 
 
     def scoreOf(self,s):
         score = 0
-        score = self.check_columns(s)
+        score += self.check_columns(s)
+        score += self.check_squares(s)
         return score
+
+    def get_neighbors(self, game_board):
+        neighbor_list = []
+        for row in range(25):
+            for index1 in range(24):
+                for index2 in range(index1+1,25):
+                    newNeighbor = game_board.copy()
+                    if self.safe_numbers[row][index1] == 0 and self.safe_numbers[row][index2] == 0:
+                        newNeighbor[row][index2],newNeighbor[row][index1] = newNeighbor[row][index1],newNeighbor[row][index2]
+                        neighbor_list.append(newNeighbor)
+        return neighbor_list
 
     #hill climbing algorithm for sudoku
     def sudokuHC(self,s_HC_Board):
         start = time()
         puzzle_board = s_HC_Board
         puzzle_score = self.scoreOf(puzzle_board)
+        new_board = False
         print("Current:\n " + str(puzzle_board))
         print("current score: " + str(puzzle_score))
-        end = time()
-        s_time_Taken = end - start
-        return puzzle_board, puzzle_score, s_time_Taken
+        while True:
+            next_nodes= self.get_neighbors(puzzle_board)
+            for node in next_nodes:
+                next_node_score = self.scoreOf(node)
+                if next_node_score < puzzle_score:
+                    puzzle_board = node
+                    puzzle_score = next_node_score
+                    new_board = True
+            if not new_board:
+                end = time()
+                s_time_Taken = end - start
+                return puzzle_board, puzzle_score, s_time_Taken
+            else:
+                new_board = False
+                print("Score: " + str(puzzle_score))
+
 
     #Simulated annealing  algorithm for sudoku
     def sudokuSA(self, s_SA_Board):
@@ -210,11 +249,11 @@ elif selection == 2:
     print("Final result for Hill Climbing algorithm:\n " + str(final_node_s) +
           "\nwith score: " + str(final_score_s) + "\nTotal time taken: " + str(total_time_s) + " s")
     print("----------------------------------------------------------------------------------")
-    # simulated annealing
+    """# simulated annealing
     print("Simulated Annealing Algorithm")
     sa_final_node_s, sa_final_score_s, sa_total_time_s = r.sudokuSA(gameBoard)
     print("Final result for simulated annealing algorithm:\n " + str(sa_final_node_s) +
-          "\nwith score: " + str(sa_final_score_s) + "\nTotal time taken: " + str(sa_total_time_s) + " s")
+          "\nwith score: " + str(sa_final_score_s) + "\nTotal time taken: " + str(sa_total_time_s) + " s")"""
 
 
 else:
