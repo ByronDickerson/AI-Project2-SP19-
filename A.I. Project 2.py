@@ -199,19 +199,38 @@ class Sudoku:
                 return puzzle_board, puzzle_score, s_time_Taken
             else:
                 new_board = False
-                print("Score: " + str(puzzle_score))
+
 
 
     #Simulated annealing  algorithm for sudoku
     def sudokuSA(self, s_SA_Board):
         start = time()
+        temp = list(range(15000))
+        schedule = [x / 15 for x in temp ]
+        schedule.reverse()
         sa_puzzle_board = s_SA_Board
         sa_puzzle_score = self.scoreOf(sa_puzzle_board)
         print("Current:\n " + str(sa_puzzle_board))
         print("current score: " + str(sa_puzzle_score))
-        end = time()
-        s_time_Taken_sa = end - start
-        return sa_puzzle_board, sa_puzzle_score, s_time_Taken_sa
+        for T in schedule:
+            if T == 0:
+                end = time()
+                s_time_Taken_sa = end - start
+                return sa_puzzle_board, sa_puzzle_score, s_time_Taken_sa
+            else:
+                next_nodes = self.get_neighbors(sa_puzzle_board)
+                rand = randint(0, len(next_nodes)-1)
+                next_node = next_nodes[rand]
+                next_node_score = self.scoreOf(next_node)
+                prob = exp((sa_puzzle_score-next_node_score)/ T)
+                if next_node_score < sa_puzzle_score:
+                    sa_puzzle_board= next_node
+                    sa_puzzle_score = next_node_score
+                elif random() < prob:
+                    sa_puzzle_board = next_node
+                    sa_puzzle_score = next_node_score
+
+
 
 selection = int(input("Please select which problem you would like solved.\n (1) Nqueens\n (2) Sudoku\nselect 1 or 2: "))
 
@@ -241,19 +260,20 @@ if selection == 1:
 
 elif selection == 2:
 
-    file = "sudoku1.csv"#(input("Please enter the file name for the board: "))
+    file = input("Please enter the file name for the board: ")
     r = Sudoku(file)
     gameBoard = r.boardS()
+    # Hill climbing
     print("Hill Climbing Algorithm")
     final_node_s , final_score_s, total_time_s = r.sudokuHC(gameBoard)
     print("Final result for Hill Climbing algorithm:\n " + str(final_node_s) +
           "\nwith score: " + str(final_score_s) + "\nTotal time taken: " + str(total_time_s) + " s")
     print("----------------------------------------------------------------------------------")
-    """# simulated annealing
+    # simulated annealing
     print("Simulated Annealing Algorithm")
     sa_final_node_s, sa_final_score_s, sa_total_time_s = r.sudokuSA(gameBoard)
     print("Final result for simulated annealing algorithm:\n " + str(sa_final_node_s) +
-          "\nwith score: " + str(sa_final_score_s) + "\nTotal time taken: " + str(sa_total_time_s) + " s")"""
+          "\nwith score: " + str(sa_final_score_s) + "\nTotal time taken: " + str(sa_total_time_s) + " s")
 
 
 else:
