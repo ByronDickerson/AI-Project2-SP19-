@@ -1,3 +1,9 @@
+"""
+Names: Zoe Lambert, Byron Dickerson, Carly Good
+Project 2: Hill-Climbing and Simulating Annealing algorithms for the n-Queens and Sudoku problems
+Date: 3/1/19
+Semester: SP 2019
+"""
 from random import sample, randint,random
 from time import time
 from math import exp
